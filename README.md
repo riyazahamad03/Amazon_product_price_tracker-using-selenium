@@ -4,4 +4,4 @@ This will send alert To your telegram bot when the product reaches your desired 
 This is simple script with low lines of code
 hope this will be helpfull for the readers
 do vote-up if you like this script
-contact me if you have any doubts (riyazahamad397@gmail.com)
+contact me if you have any doubts Contact Me
