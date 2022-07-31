@@ -1,48 +1,56 @@
 from selenium import webdriver
 import requests
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from datetime import datetime
+from webdriver_manager.chrome import ChromeDriverManager
+import time
 
 
-ASIN=input("Please Enter Asin of product : ")
+url=input("Please enter the your custom link : ")
+#ASIN=input("Please Enter Asin of product : ")
 Desired_Price=int(input("please enter the desired price ,Which Should Be In The Format Of Less Than < :"))
 print("Thank You I Will Be Notifying You Once When The Price Drops ")
-url='https://www.amazon.in/dp/'+ASIN
-url_1='https://www.amazon.in/gp/offer-listing/'+ASIN
+#url='https://www.amazon.in/dp/'+ASIN
+#url_1='https://www.amazon.in/gp/offer-listing/'+ASIN
 
-webdriver_path =r"Your Webdriver Path"
+webdriver_path =r"C:\Users\riyaz\Desktop\python_scripts\chromedriver.exe"
+service_obj = Service(webdriver_path)
 options = webdriver.ChromeOptions()
-#options.add_argument('--headless') 
+options.add_experimental_option("detach",True)
+# options.add_argument('--headless') 
 options.add_argument('start-maximized') 
 options.add_argument('disable-infobars')
 options.add_argument('--disable-extensions')
 options.add_argument('--disable-popup-blocking')
-driver=webdriver.Chrome(webdriver_path,options=options)
+options.add_experimental_option('excludeSwitches', ['enable-logging'])
+# driver = webdriver.Chrome(service=service_obj)
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),options=options)
 
 def check_price():
-    
     try:
         driver.get(url)
-        name = driver.find_element_by_id("productTitle").text
-        price=driver.find_element_by_id("priceblock_ourprice").text
+        time.sleep(5)
+        name = driver.find_element(By.ID,"productTitle").text
+        try:
+            price=driver.find_element(By.CSS_SELECTOR,"#corePrice_desktop > div > table > tbody > tr:nth-child(2) > td.a-span12 > span.a-price.a-text-price.a-size-medium.apexPriceToPay").text
+            # print(price)
+        except:
+            price=driver.find_element(By.CLASS_NAME,"a-price-whole").text
+            # print(price)
         converted_price=float(price.replace("₹","").replace(",","").replace(" ",""))
         if(converted_price <= Desired_Price ):
-            send_message("\n" "\n"+"Good News!! Price Fell Down"+"\n" "\n"+name+"\n" "\n"+price+ "\n" "\n"+ url)
-        print(name)
-        print(converted_price)
+            send_message("\n" "\n"+name+"\n" "\n"+price+ "\n" "\n"+ url)
+            print(name)
+            print(converted_price)
+            # time.sleep(60)
+        else:
+            print(name)
+            #print(price)
+            print("The Required Limit Not Reached ")
+    
     except:
-        print("*price unavaivable")
-        
-    try:
-        driver.get(url_1)
-        name_1=driver.find_element_by_css_selector("#olpProductDetails > h1").text
-        price_1=driver.find_element_by_css_selector("#olpOfferList > div > div > div:nth-child(3) > div.a-column.a-span2.olpPriceColumn > span > span").text
-        converted_price_1 = float(price_1.replace(" ","").replace(",",""))
-        if (converted_price_1 <= Desired_Price):
-            send_message("\n" "\n"+"Good News!! Price Fell Down"+"\n" "\n"+name_1+"\n" "\n"+price_1+ "\n" "\n"+ url_1)
-
-            print(name_1)
-            print(converted_price_1)
-    except:
-        print("price unavaivable")
+        print("*Price Unavaivable or not at your desired limit ")
 
 def send_message(bot_message):
     
